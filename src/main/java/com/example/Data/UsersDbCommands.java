@@ -114,22 +114,37 @@ public class UsersDbCommands extends DbConnection {
     }
 
     public boolean InsertUser(Person person) {
-        String query = "INSERT INTO users (name, password, role, phone, email, clinic_id)" +
-                "VALUES ('" +
-                person.getName() + "','" +
-                person.getPassword() + "','" +
-                person.getRole() + "','" +
-                person.getPhoneNumber() + "','" +
-                person.getEmail() + "'," +
-                person.getClinicId() + ")";
+        // Check for duplicate name, phone, or email
+        String checkQuery = "SELECT COUNT(*) FROM users WHERE LOWER(name) = LOWER('" + person.getName() + 
+                "') OR phone = '" + person.getPhoneNumber() + 
+                "' OR LOWER(email) = LOWER('" + person.getEmail() + "')";
 
         try {
+            Statement checkStmt = db.createStatement();
+            ResultSet rs = checkStmt.executeQuery(checkQuery);
+            
+            if (rs.next() && rs.getInt(1) > 0) {
+                JOptionPane.showMessageDialog(null, 
+                        "User with the same name, phone, or email already exists", 
+                        "Duplicate Entry", 
+                        JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+            
+            String query = "INSERT INTO users (name, password, role, phone, email, clinic_id)" +
+                    "VALUES ('" +
+                    person.getName() + "','" +
+                    person.getPassword() + "','" +
+                    person.getRole() + "','" +
+                    person.getPhoneNumber() + "','" +
+                    person.getEmail() + "'," +
+                    person.getClinicId() + ")";
+
             Statement stmt = db.createStatement();
             stmt.executeUpdate(query);
             return true;
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Exception", JOptionPane.ERROR_MESSAGE);
-
         }
         return false;
     }
