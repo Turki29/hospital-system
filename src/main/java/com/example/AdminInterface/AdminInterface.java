@@ -17,7 +17,7 @@ import com.example.Models.Person;
 
 public class AdminInterface extends JFrame {
 
-    JButton btnShowManageDoctors, btnShowManagePatients;
+    JButton btnShowManageDoctors, btnShowManagePatients, btnShowManageSchedule;
     JPanel mainPanel;
     boolean disableMainWindow = false;
     boolean disableDoctorWindow = false;
@@ -40,15 +40,21 @@ public class AdminInterface extends JFrame {
        btnShowManagePatients = new JButton("Manage Patients");
        btnShowManagePatients.addActionListener(e -> new AdminShowPatients()); 
 
+
+       btnShowManageSchedule = new JButton("Manage Schedules");
+       btnShowManageSchedule.addActionListener(e -> new AdminShowSchedules()); 
         JPanel buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
 
         btnShowManageDoctors.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnShowManagePatients.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnShowManageSchedule.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         buttonsPanel.add(btnShowManageDoctors);
         buttonsPanel.add(Box.createVerticalStrut(10));
         buttonsPanel.add(btnShowManagePatients);
+        buttonsPanel.add(Box.createVerticalStrut(10));
+        buttonsPanel.add(btnShowManageSchedule);
 
         JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         centerPanel.add(buttonsPanel);

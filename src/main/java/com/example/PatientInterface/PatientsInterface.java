@@ -5,6 +5,7 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -80,12 +81,20 @@ public class PatientsInterface extends JFrame {
             List<String> clinicsList = appointmentDb.getClinics();
             JComboBox<String> clinicsCombo = new JComboBox<>(clinicsList.toArray(new String[0]));
             JComboBox<String> doctorCombo = new JComboBox<>();
+            
             JComboBox<String> dayCombo = new JComboBox<>(new String[] {
                 "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"
             });
             JComboBox<String> timeCombo = new JComboBox<>(new String[] {
                 "8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM"
             });
+
+            List<Person> doctors = new ArrayList<>();
+            doctors = userDb.getDoctors();
+            for(Person doctor : doctors)
+            {
+                doctorCombo.addItem(doctor.name);
+            }
 
             JTextField searchField = new JTextField(10);
             JButton btnSearch = new JButton("Search");
@@ -99,15 +108,22 @@ public class PatientsInterface extends JFrame {
                 }
             });
 
-            clinicsCombo.addActionListener(ev -> {
-                String selectedDepartment = (String) clinicsCombo.getSelectedItem();
-                int clinicId = appointmentDb.getClinicIdByName(selectedDepartment);
-                List<String> doctors = appointmentDb.getDoctorsByClinic(clinicId);
-                doctorCombo.removeAllItems();
-                for (String doctorName : doctors) {
-                    doctorCombo.addItem(doctorName);
+            clinicsCombo.addActionListener( new ActionListener() {
+             
+                public void actionPerformed(ActionEvent e)
+                {
+                    
+                        String selectedDepartment = (String) clinicsCombo.getSelectedItem();
+                        int clinicId = appointmentDb.getClinicIdByName(selectedDepartment);
+                        List<Person> doctors = appointmentDb.getDoctorsByClinic(clinicId);
+                        doctorCombo.removeAllItems();
+                        for (Person doctor : doctors) {
+                            doctorCombo.addItem(doctor.name);
+                        }
+                    
                 }
-            });
+                
+            } );
 
             JButton btnBook = new JButton("Book Appointment");
             JButton btnCancel = new JButton("Cancel");

@@ -85,4 +85,20 @@ public class ClinicsDbCommands extends DbConnection {
         return doctors;
     }
 
+   
+    
+
+    public boolean DeleteClinic(int id) {
+        String query = "DELETE FROM clinics WHERE Id = " + id + ";";
+
+        try {
+            Statement stmt = db.createStatement();
+            stmt.executeUpdate(query);
+            return true;
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Exception", JOptionPane.ERROR_MESSAGE);
+
+        }
+        return false;
+    }
 }

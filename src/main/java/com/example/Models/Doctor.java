@@ -1,8 +1,5 @@
 package com.example.Models;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Doctor extends Person {
     public String speciality, startWorkingHours, endWorkingHours;
 

@@ -115,9 +115,11 @@ public class UserInterface implements ActionListener {
 
     public static void main(String[] args) {
         
-            
+       
+
         
-            
+        
+           
             App frame = new App("Hospital");
         
          

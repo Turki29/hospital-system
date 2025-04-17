@@ -2,29 +2,27 @@ package com.example.AdminInterface;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.*;
 
-import com.example.Data.ClinicsDbCommands;
+import com.example.Data.AppointmentsDbCommands;
 import com.example.Data.UsersDbCommands;
+import com.example.Models.Appointment;
 import com.example.Models.Person;
-import com.example.Models.Clinic;
-
-public class AdminShowDoctors extends JFrame // implements ActionListener
-{
+import java.util.List;
+import java.util.ArrayList;
+public class AdminShowSchedules extends JFrame{
     JTextField tfDoctorID, tfName, tfEmail, tfPhone;
     JButton btnSearch, btnAdd;
     JTable table;
     DefaultTableModel tableModel;
-    UsersDbCommands userDb;
-    private java.util.List<Person> doctorList = new java.util.ArrayList<>();
+    AppointmentsDbCommands appointmentDb;
+    private List<Appointment> appointmentsList = new ArrayList<>();
 
-    public AdminShowDoctors() {
-        setTitle("Doctor Manager");
-        userDb = new UsersDbCommands();
+    public AdminShowSchedules() {
+        setTitle("Schedule Manager");
+        appointmentDb = new AppointmentsDbCommands();
 
         JLabel lblID = new JLabel("ID:");
         JLabel lblName = new JLabel("Name:");
@@ -61,13 +59,13 @@ public class AdminShowDoctors extends JFrame // implements ActionListener
                 }
 
                 String query = queryBuilder.toString();
-                doctorList = userDb.getUsers(query);
+                appointmentsList = userDb.getUsers(query);
                 // Clear the existing table data
                 tableModel.setRowCount(0);
 
                 // Populate the table with the search results
-                if (doctorList != null && !doctorList.isEmpty()) {
-                    for (Person doctor : doctorList) {
+                if (appointmentsList != null && !appointmentsList.isEmpty()) {
+                    for (Person doctor : appointmentsList) {
                         tableModel.addRow(new Object[] {
                                 doctor.id,
                                 doctor.name,
@@ -103,7 +101,7 @@ public class AdminShowDoctors extends JFrame // implements ActionListener
         inputPanel.add(btnSearch);
         inputPanel.add(btnAdd);
 
-        String[] columns = { "ID", "Name", "Email", "Phone", "Password", "Role", "Clinic ID" };
+        String[] columns = {"ID","Clinic","Doctor","Patient","Day","Time"};
 
         // Initialize the table model and table
         tableModel = new DefaultTableModel(columns, 0);
@@ -111,31 +109,32 @@ public class AdminShowDoctors extends JFrame // implements ActionListener
 
         // Populate the table with doctor data
         // Assuming there's a method to get doctors from the database
-        doctorList = userDb.getUsers("role = 'doctor'"); // Replace with actual method to get doctors
-        if (doctorList != null) {
-            for (Person doctor : doctorList) {
+        appointmentsList = appointmentDb.getAppointments();
+        if(appointmentsList.isEmpty()) btnAdd.setText("empty");
+        else btnAdd.setText("not empty");
+        if (appointmentsList != null) {
+            for (Appointment appointment : appointmentsList) {
                 tableModel.addRow(new Object[] {
-                        doctor.id,
-                        doctor.name,
-                        doctor.email,
-                        doctor.phoneNumber,
-                        doctor.password,
-                        doctor.role,
-                        doctor.clinicId
+                    appointment.getId(),
+                        appointment.getClinicName(),
+                        appointment.getDoctorName(),
+                        appointment.getPatientName(),
+                        appointment.getDay(),
+                        appointment.getTime()
                 });
             }
         }
         table.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 int row = table.getSelectedRow();
-                if (row >= 0 && doctorList != null) {
+                if (row >= 0 && appointmentsList != null) {
                     int id = (int) tableModel.getValueAt(row, 0);
-                    for (Person doctor : doctorList) {
-                        if (doctor.id == id) {
-                            new ShowDoctorDetails(doctor);
-                            break;
-                        }
-                    }
+                    // for (Person doctor : appointmentsList) {
+                    //     if (doctor.id == id) {
+                    //         new ShowDoctorDetails(doctor);
+                    //         break;
+                    //     }
+                    // }
                 }
             }
         });
@@ -156,15 +155,12 @@ public class AdminShowDoctors extends JFrame // implements ActionListener
 
 class ShowDoctorDetails extends JFrame {
     JTextField tfName, tfPhone, tfEmail;
-    JComboBox<String> comboClinic;
     JButton btnEdit, btnSave;
     private Person doctor;
     UsersDbCommands userDb;
-    ClinicsDbCommands clinicsDbCommands;
 
     public ShowDoctorDetails(Person doctor) {
         userDb = new UsersDbCommands();
-        clinicsDbCommands = new  ClinicsDbCommands();
         this.doctor = doctor;
         setTitle("Doctor Details");
 
@@ -172,26 +168,14 @@ class ShowDoctorDetails extends JFrame {
         JLabel lblName = new JLabel("Name:");
         JLabel lblPhone = new JLabel("Phone:");
         JLabel lblEmail = new JLabel("Email:");
-        JLabel lblClinic = new JLabel("Clinic:");
 
         tfName = new JTextField(doctor.name, 20);
-        tfEmail = new JTextField(doctor.email, 20);
         tfPhone = new JTextField(doctor.phoneNumber, 20);
-        List<Clinic> clinics = clinicsDbCommands.getAllClinics();
-        comboClinic = new JComboBox<String>();
-        
-        // Populate combobox with clinic names
-        for (Clinic clinic : clinics) {
-            comboClinic.addItem(clinic.getName()); // Adjust this method call based on your Clinic class
-        }
-        
-        comboClinic.setSelectedIndex(doctor.clinicId - 1);
+        tfEmail = new JTextField(doctor.email, 20);
 
         tfName.setEditable(false);
         tfPhone.setEditable(false);
         tfEmail.setEditable(false);
-        comboClinic.setEditable(false);
-        
 
         btnEdit = new JButton("Edit");
         btnSave = new JButton("Save");
@@ -200,7 +184,7 @@ class ShowDoctorDetails extends JFrame {
 
         btnEdit.addActionListener(e -> enableEditing());
 
-        JPanel detailsPanel = new JPanel(new GridLayout(5, 2, 5, 5));
+        JPanel detailsPanel = new JPanel(new GridLayout(4, 2, 5, 5));
         detailsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         detailsPanel.add(lblID);
         detailsPanel.add(new JLabel());
@@ -210,8 +194,6 @@ class ShowDoctorDetails extends JFrame {
         detailsPanel.add(tfPhone);
         detailsPanel.add(lblEmail);
         detailsPanel.add(tfEmail);
-        detailsPanel.add(lblClinic);
-        detailsPanel.add(comboClinic);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.add(btnEdit);
@@ -244,20 +226,16 @@ class ShowDoctorDetails extends JFrame {
         tfName.setEditable(true);
         tfPhone.setEditable(true);
         tfEmail.setEditable(true);
-        comboClinic.setEditable(true);
         btnEdit.setEnabled(false);
         btnSave.setEnabled(true);
-        
     }
 
     private void disableEditing() {
         tfName.setEditable(false);
         tfPhone.setEditable(false);
         tfEmail.setEditable(false);
-        comboClinic.setEditable(false);
         btnEdit.setEnabled(true);
         btnSave.setEnabled(false);
-        
     }
 
 }

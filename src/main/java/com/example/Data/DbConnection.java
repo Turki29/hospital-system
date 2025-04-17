@@ -16,7 +16,7 @@ public class DbConnection {
         try{
             this.db = DriverManager.getConnection(url);
            
-       
+            
             
 
         } catch (SQLException e) {

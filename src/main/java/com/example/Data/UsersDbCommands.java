@@ -12,6 +12,10 @@ import com.example.Models.Person;
 
 public class UsersDbCommands extends DbConnection {
 
+    public UsersDbCommands() {
+        // this.InsertUser(new Person(-1, "trtsy", "email@email.com", "966507274092", "Asdqwe12", "admin", -1));
+    }
+
     public Person getUser(int givenId) {
         String query = "SELECT * FROM users where id = " + givenId + ";";
         Person resultPerson = null;

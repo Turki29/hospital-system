@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.example.Models.Appointment;
+import com.example.Models.Person;
 
 public class AppointmentsDbCommands extends DbConnection {
 
@@ -27,7 +28,43 @@ public class AppointmentsDbCommands extends DbConnection {
         }
     }
 
-   
+   public List<Appointment> getAppointments()
+   {
+    List<Appointment> appointments = new ArrayList<>();
+    String sql = "SELECT a.*, p.name AS patient_name, d.name AS doctor_name, c.name AS clinic_name " + 
+             "FROM appointments a " + 
+             "JOIN users p ON a.patient_id = p.id " +
+             "JOIN users d ON a.doctor_id = d.id " + 
+             "JOIN clinics c ON a.clinic_id = c.id ";
+             
+            
+            
+
+
+        try (PreparedStatement stmt = db.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                Appointment appointment = new Appointment(
+                    rs.getInt("id"),
+                    rs.getInt("patient_id"),
+                    rs.getInt("doctor_id"),
+                    rs.getInt("clinic_id"),
+                    rs.getString("day"),
+                    rs.getString("time")
+                );
+                appointment.setDoctorName(rs.getString("doctor_name"));
+                appointment.setClinicName(rs.getString("clinic_name"));
+                appointment.setPatientName(rs.getString("patient_name"));
+                appointments.add(appointment);
+            }
+        } 
+        catch (SQLException e) {
+            System.out.println(" Error fetching appointments: " + e.getMessage());
+        }
+        
+        return appointments;
+   }
     
     public List<Appointment> getAppointmentsForPatient(int patientId) {
         List<Appointment> appointments = new ArrayList<>();
@@ -85,9 +122,9 @@ public class AppointmentsDbCommands extends DbConnection {
         return clinics;
     }
 
-    public List<String> getDoctorsByClinic(int clinicId) {
-        List<String> doctors = new ArrayList<>();
-        String sql = "SELECT u.name FROM users u " +
+    public List<Person> getDoctorsByClinic(int clinicId) {
+        List<Person> doctors = new ArrayList<>();
+        String sql = "SELECT u.* FROM users u " +
                      "WHERE u.clinic_id = ? AND u.role = 'doctor'";
         try (PreparedStatement stmt = db.prepareStatement(sql)) {
             stmt.setInt(1, clinicId);
@@ -145,5 +182,28 @@ public class AppointmentsDbCommands extends DbConnection {
         }
         
         return doctors;
+    }
+
+    public boolean UpdateAppointment(Appointment appointment) {
+        String sql = "UPDATE appointments SET patient_id = ?, doctor_id = ?, clinic_id = ?, day = ?, time = ? WHERE id = ?";
+        
+        try (PreparedStatement pstmt = db.prepareStatement(sql)) {
+            pstmt.setInt(1, appointment.getPatientId());
+            pstmt.setInt(2, appointment.getDoctorId());
+            pstmt.setInt(3, appointment.getClinicId());
+            pstmt.setString(4, appointment.getDay());
+            pstmt.setString(5, appointment.getTime());
+            pstmt.setInt(6, appointment.getId());
+            
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected == 0) {
+                System.out.println("⚠️ No appointments were updated. ID might not exist: " + appointment.getId());
+                return false;
+            }
+            return true;
+        } catch (SQLException e) {
+            System.out.println("❌ Error updating appointment: " + e.getMessage());
+            return false;
+        }
     }
 }

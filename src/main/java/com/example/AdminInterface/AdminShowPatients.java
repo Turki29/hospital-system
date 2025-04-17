@@ -2,10 +2,12 @@ package com.example.AdminInterface;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -15,8 +17,9 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
-import org.w3c.dom.events.MouseEvent;
+import java.awt.event.MouseEvent;
 
+import com.example.Data.PatientsRecordsDbCommands;
 import com.example.Data.UsersDbCommands;
 import com.example.Models.Person;
 
@@ -134,13 +137,14 @@ public class AdminShowPatients extends JFrame //implements ActionListener
             }
         }
         table.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 int row = table.getSelectedRow();
                 if (row >= 0 && patientsList != null) {
                     int id = (int) tableModel.getValueAt(row, 0);
                     for (Person patient : patientsList) {
                         if (patient.id == id) {
-                            // new ShowDoctorDetails(patient);
+                            new ShowPatientDetails(patient);
                             break;
                         }
                     }
@@ -163,6 +167,145 @@ public class AdminShowPatients extends JFrame //implements ActionListener
 }
 
 
+class ShowPatientDetails extends JFrame {
+    JTextField tfName, tfPhone, tfEmail;
+    JButton btnEdit, btnSave, btnViewRecord;
+    private Person patient;
+    UsersDbCommands userDb;
+    PatientsRecordsDbCommands recordDb;
+    JLabel lblRecordStatus;
 
+    public ShowPatientDetails(Person patient) {
+        userDb = new UsersDbCommands();
+        recordDb = new PatientsRecordsDbCommands();
+        this.patient = patient;
+        setTitle("Patient Details");
+
+        JLabel lblID = new JLabel("Patient ID: " + patient.id);
+        JLabel lblName = new JLabel("Name:");
+        JLabel lblPhone = new JLabel("Phone:");
+        JLabel lblEmail = new JLabel("Email:");
+        lblRecordStatus = new JLabel();
+
+        tfName = new JTextField(patient.name, 20);
+        tfPhone = new JTextField(patient.phoneNumber, 20);
+        tfEmail = new JTextField(patient.email, 20);
+
+        
+        tfName.setEditable(false);
+        tfPhone.setEditable(false);
+        tfEmail.setEditable(false);
+
+        btnEdit = new JButton("Edit");
+        btnSave = new JButton("Save");
+        btnViewRecord = new JButton("View Record");
+        btnSave.setEnabled(false);
+        
+        // Check if patient has a record
+        var record = recordDb.getRecordByUserId(patient.id);
+        
+        if (record.getId() == -1) {
+            lblRecordStatus.setText("No record found");
+            btnViewRecord.setEnabled(false);
+        } else {
+            lblRecordStatus.setText("Patient has a medical record");
+            btnViewRecord.setEnabled(true);
+        }
+
+        btnEdit.addActionListener(e -> enableEditing());
+        
+        btnViewRecord.addActionListener(e -> {
+            if (record.getId() != -1) {
+                showPatientRecord(record);
+            }
+        });
+
+        JPanel detailsPanel = new JPanel(new GridLayout(5, 2, 5, 5));
+        detailsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        detailsPanel.add(lblID);
+        detailsPanel.add(new JLabel());
+        detailsPanel.add(lblName);
+        detailsPanel.add(tfName);
+        detailsPanel.add(lblPhone);
+        detailsPanel.add(tfPhone);
+        detailsPanel.add(lblEmail);
+        detailsPanel.add(tfEmail);
+        detailsPanel.add(lblRecordStatus);
+        detailsPanel.add(new JLabel());
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.add(btnEdit);
+        buttonPanel.add(btnSave);
+        buttonPanel.add(btnViewRecord);
+        
+        btnSave.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Person userOldInfo = userDb.getUser(patient.id);
+                userDb.UpdateUser(new Person(patient.id, tfName.getText(), tfEmail.getText(), tfPhone.getText(),
+                                patient.password, patient.role, patient.clinicId));
+                disableEditing();
+            }
+        });
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(detailsPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        add(mainPanel);
+        setSize(400, 250);
+        setLocationRelativeTo(null);
+        setVisible(true);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+    }
+
+    private void showPatientRecord(com.example.Models.PatientRecord record) {
+        JFrame recordFrame = new JFrame("Patient Record");
+        JPanel panel = new JPanel(new GridLayout(7, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        
+        panel.add(new JLabel("Record ID:"));
+        panel.add(new JLabel(String.valueOf(record.getId())));
+        
+        panel.add(new JLabel("Patient ID:"));
+        panel.add(new JLabel(String.valueOf(record.getUserId())));
+        
+        panel.add(new JLabel("Weight:"));
+        panel.add(new JLabel(String.valueOf(record.getWeight()) + " kg"));
+        
+        panel.add(new JLabel("Height:"));
+        panel.add(new JLabel(String.valueOf(record.getHeight()) + " cm"));
+        
+        panel.add(new JLabel("Blood Pressure:"));
+        panel.add(new JLabel(record.getBloodPressure()));
+        
+        panel.add(new JLabel("Sugar:"));
+        panel.add(new JLabel(String.valueOf(record.getSugar()) + " mg/dL"));
+        
+        panel.add(new JLabel("Longterm Disease:"));
+        panel.add(new JLabel(record.getLongtermDisease()));
+        
+        recordFrame.add(panel);
+        recordFrame.setSize(400, 300);
+        recordFrame.setLocationRelativeTo(this);
+        recordFrame.setVisible(true);
+        recordFrame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+    }
+
+    private void enableEditing() {
+        tfName.setEditable(true);
+        tfPhone.setEditable(true);
+        tfEmail.setEditable(true);
+        btnEdit.setEnabled(false);
+        btnSave.setEnabled(true);
+    }
+
+    private void disableEditing() {
+        tfName.setEditable(false);
+        tfPhone.setEditable(false);
+        tfEmail.setEditable(false);
+        btnEdit.setEnabled(true);
+        btnSave.setEnabled(false);
+    }
+}
 
 
