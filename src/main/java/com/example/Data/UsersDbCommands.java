@@ -174,7 +174,36 @@ public class UsersDbCommands extends DbConnection {
         return false; 
     }
 
+    public List<Person> getDoctorsPatients(int doctorId)
+    {
+        String query = "SELECT DISTINCT u.* FROM users u " +
+                   "JOIN appointments a ON u.id = a.patient_id " +
+                   "WHERE a.doctor_id = " + doctorId + " AND u.role = 'patient';";
 
+        List<Person> resultPersons = new ArrayList<>();
+
+        try (
+            Statement stmt = db.createStatement();
+            ResultSet rs = stmt.executeQuery(query)) {
+
+            while (rs.next()) {
+            int id = rs.getInt("id");
+            String name = rs.getString("name");
+            String password = rs.getString("password");
+            String role = rs.getString("role");
+            String phone = rs.getString("phone");
+            String email = rs.getString("email");
+            int clinicId = rs.getInt("clinic_id");
+
+            Person person = new Person(id, name, email, phone,
+             password, role, clinicId);
+            resultPersons.add(person);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error fetching doctor's patients", "Exception", JOptionPane.ERROR_MESSAGE);
+        }
+        return resultPersons;
+    }
  
     public List<Person> getDoctors() {
         return getUsers("role = 'doctor'");

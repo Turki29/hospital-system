@@ -206,4 +206,23 @@ public class AppointmentsDbCommands extends DbConnection {
             return false;
         }
     }
+
+    public boolean DeleteAppointment(int id)
+    {
+        String sql = "DELETE FROM appointments WHERE id = ?";
+
+        try (PreparedStatement pstmt = db.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected == 0) {
+                System.out.println("⚠️ No appointments were deleted. ID might not exist: " + id);
+                return false;
+            }
+            return true;
+        } catch (SQLException e) {
+            System.out.println("❌ Error deleting appointment: " + e.getMessage());
+            return false;
+        }
+    }
 }
