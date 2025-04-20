@@ -124,13 +124,21 @@ public class AppointmentsDbCommands extends DbConnection {
 
     public List<Person> getDoctorsByClinic(int clinicId) {
         List<Person> doctors = new ArrayList<>();
-        String sql = "SELECT u.* FROM users u " +
-                     "WHERE u.clinic_id = ? AND u.role = 'doctor'";
+        String sql = "SELECT * FROM users WHERE clinic_id =" + clinicId + ";";
         try (PreparedStatement stmt = db.prepareStatement(sql)) {
-            stmt.setInt(1, clinicId);
+            // stmt.setInt(1, clinicId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                doctors.add(rs.getString("name"));
+                Person doctor = new Person(
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getString("email"),
+                    rs.getString("phone"),
+                    rs.getString("password"),
+                    rs.getString("role"),
+                    rs.getInt("clinic_id")
+                );
+                doctors.add(doctor);
             }
         } catch (SQLException e) {
             System.out.println("❌ Error fetching doctors by clinic: " + e.getMessage());

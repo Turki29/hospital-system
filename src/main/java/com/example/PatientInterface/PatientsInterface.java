@@ -101,7 +101,7 @@ public class PatientsInterface extends JFrame {
 
             btnSearch.addActionListener(ev -> {
                 String keyword = searchField.getText().trim();
-                List<Person> results = userDb.getUsers("name = '"+keyword+"' and role ='doctor'");
+                List<Person> results = userDb.getUsers("name LIKE '%" + keyword + "%' AND role = 'doctor'");
                 doctorCombo.removeAllItems();
                 for (Person doc : results) {
                     doctorCombo.addItem(doc.name);
@@ -115,7 +115,11 @@ public class PatientsInterface extends JFrame {
                     
                         String selectedDepartment = (String) clinicsCombo.getSelectedItem();
                         int clinicId = appointmentDb.getClinicIdByName(selectedDepartment);
-                        List<Person> doctors = appointmentDb.getDoctorsByClinic(clinicId);
+                        
+                        List<Person> doctors = appointmentDb.getDoctorsByClinic(clinicId );
+
+                        JOptionPane.showMessageDialog(null, selectedDepartment + " id :" + clinicId + " length:" + doctors.isEmpty() );
+
                         doctorCombo.removeAllItems();
                         for (Person doctor : doctors) {
                             doctorCombo.addItem(doctor.name);

@@ -59,23 +59,23 @@ public class AdminShowSchedules extends JFrame{
                 }
 
                 String query = queryBuilder.toString();
-                appointmentsList = userDb.getUsers(query);
+                appointmentsList = appointmentDb.getAppointments();
                 // Clear the existing table data
                 tableModel.setRowCount(0);
 
                 // Populate the table with the search results
                 if (appointmentsList != null && !appointmentsList.isEmpty()) {
-                    for (Person doctor : appointmentsList) {
-                        tableModel.addRow(new Object[] {
-                                doctor.id,
-                                doctor.name,
-                                doctor.email,
-                                doctor.phoneNumber,
-                                doctor.password,
-                                doctor.role,
-                                doctor.clinicId
-                        });
-                    }
+                    // for (Person doctor : appointmentsList) {
+                    //     tableModel.addRow(new Object[] {
+                    //             doctor.id,
+                    //             doctor.name,
+                    //             doctor.email,
+                    //             doctor.phoneNumber,
+                    //             doctor.password,
+                    //             doctor.role,
+                    //             doctor.clinicId
+                    //     });
+                    // }
                 }
                 // Refresh the table display
                 table.repaint();
