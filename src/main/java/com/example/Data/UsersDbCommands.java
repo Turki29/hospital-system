@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
+import com.example.Models.Appointment;
 import com.example.Models.Person;
 
 public class UsersDbCommands extends DbConnection {
@@ -212,6 +213,123 @@ public class UsersDbCommands extends DbConnection {
     public List<Person> searchDoctorsByName(String keyword) {
         return getUsers("role = 'doctor' AND name LIKE '%" + keyword + "%'");
     }
+
+    public void cancelAppointment(int apptId) {
+        String query = "DELETE FROM appointments WHERE id = " + apptId + ";";
+
+        try {
+            Statement stmt = db.createStatement();
+            int rowsAffected = stmt.executeUpdate(query);
+
+            if (rowsAffected > 0) {
+                JOptionPane.showMessageDialog(null, 
+                        "Appointment canceled successfully", 
+                        "Success", 
+                        JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, 
+                        "No appointment found with ID: " + apptId, 
+                        "Not Found", 
+                        JOptionPane.WARNING_MESSAGE);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, 
+                    "Error canceling appointment: " + e.getMessage(), 
+                    "Exception", 
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void rescheduleAppointment(int apptId, String newDayName, String newTime) {
+        
+        if (newDayName == null || newDayName.isEmpty()) {
+            JOptionPane.showMessageDialog(null, 
+                "Enter the day you want to reschedule to (e.g., Monday, Tuesday)", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Validate the new time
+        if (newTime == null || newTime.isEmpty()) {
+            JOptionPane.showMessageDialog(null, 
+                    "Please enter a valid time (e.g., 10:00 AM)", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Check if the doctor has another appointment at the selected day name and time
+        String checkQuery = "SELECT COUNT(*) FROM appointments WHERE doctor_id = " +
+                "(SELECT doctor_id FROM appointments WHERE id = " + apptId + ") " +
+                "AND day = '" + newDayName + "' AND time = '" + newTime + "';";
+
+        try {
+            Statement checkStmt = db.createStatement();
+            ResultSet rs = checkStmt.executeQuery(checkQuery);
+
+            if (rs.next() && rs.getInt(1) > 0) {
+                JOptionPane.showMessageDialog(null, 
+                        "The doctor already has an appointment at the selected day and time", 
+                        "Conflict", 
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Update the appointment with the new day name and time
+            String updateQuery = "UPDATE appointments SET day = '" + newDayName + 
+                    "', time = '" + newTime + "' WHERE id = " + apptId + ";";
+
+            Statement updateStmt = db.createStatement();
+            int rowsAffected = updateStmt.executeUpdate(updateQuery);
+
+            if (rowsAffected > 0) {
+                JOptionPane.showMessageDialog(null, 
+                        "Appointment rescheduled successfully", 
+                        "Success", 
+                        JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, 
+                        "No appointment found with ID: " + apptId, 
+                        "Not Found", 
+                        JOptionPane.WARNING_MESSAGE);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, 
+                    "Error rescheduling appointment: " + e.getMessage(), 
+                    "Exception", 
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
     
+    public List<Appointment> getDoctorsAppointments(int doctorId) {
+        String query = "SELECT a.id, a.patient_id, a.clinic_id, a.day, a.time, u.name AS patient_name " +
+                       "FROM appointments a " +
+                       "JOIN users u ON a.patient_id = u.id " +
+                       "WHERE a.doctor_id = " + doctorId + ";";
+
+        List<Appointment> resultAppointments = new ArrayList<>();
+
+        try (
+            Statement stmt = db.createStatement();
+            ResultSet rs = stmt.executeQuery(query)) {
+
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                int patientId = rs.getInt("patient_id");
+                int clinicId = rs.getInt("clinic_id");
+                String day = rs.getString("day");
+                String time = rs.getString("time"); // Ensure time is fetched from the result set
+                String patientName = rs.getString("patient_name");
+                Appointment appointment = new Appointment(id, patientId, doctorId, 
+                        clinicId, day, time);
+                appointment.setPatientName(patientName); // Use the patientName variable
+                resultAppointments.add(appointment);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error fetching doctor's appointments", "Exception", JOptionPane.ERROR_MESSAGE);
+        }
+        return resultAppointments;
+    }
 }
 

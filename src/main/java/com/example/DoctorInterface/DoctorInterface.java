@@ -2,6 +2,8 @@ package com.example.DoctorInterface;
 
 
 
+
+
  import java.awt.*;
 
  import javax.swing.*;
@@ -10,15 +12,17 @@ package com.example.DoctorInterface;
 
 import com.example.Models.Person;
  public class DoctorInterface extends JFrame {
- private JButton Can1Btn, ReschdBtn,AccessBtn,AddMedBtn,CnfrmBtn,Can2Btn,LogOutBtn;
+ private JButton AccessBtn,AddMedBtn,Can1Btn,LogOutBtn,VEButton;
  private JComboBox Apptmnts,PatPick;
  private String Pat [] = { "ID : 1  |  Ali Fahad  | Age :  21  |  M  | 3:30PM 11/10/2025", "ID : 2  |  Sarah Mohammad  |  25  |  F  |  4:25PM  11/12/2025"};
  private String arrPatPick [] = { "Ali Fahad ", "Sarah Mohammad "};
  private JLabel LDocName,PMeds,PName,LApptmnts;
  private JTextField TFPMeds;
+ private Person currentDoctor;
  
-     public DoctorInterface(String title, Person name) {
+     public DoctorInterface(String title, Person currentDoctor) {
      super(title);
+     this.currentDoctor=currentDoctor;
      this.setLocation(200,400);
      this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
      JPanel MainP = (JPanel) this.getContentPane();
@@ -27,9 +31,9 @@ import com.example.Models.Person;
      JPanel P1 = new JPanel(new GridLayout(2,1));
      JPanel P11 = new JPanel(new FlowLayout(FlowLayout.LEFT));
      
-      LDocName = new JLabel("Doctor : Nawaf Almutairi");
+     LDocName = new JLabel("Doctor: " + currentDoctor.getName());
       AccessBtn = new JButton("Access Patient Records");
-      AccessBtn.addActionListener(new AccessActionListener());
+      AccessBtn.addActionListener( e -> new DoctorShowPatients(currentDoctor));
       P11.add(LDocName);
       P11.add(AccessBtn);
       P1.add(P11);
@@ -39,14 +43,15 @@ import com.example.Models.Person;
       JPanel P22 = new JPanel();
   
       LApptmnts = new JLabel("Appointments: ");
-      Apptmnts = new JComboBox(Pat);
-      Can1Btn = new JButton("Cancel");
-      ReschdBtn = new JButton("Reschedule");
-      ReschdBtn.addActionListener(new ReschdActionListener());
+      VEButton = new JButton("View/Edit Appointments");
+      VEButton.addActionListener(new ActionListener() {
+          @Override
+          public void actionPerformed(ActionEvent e) {
+              new DoctorShowAppointments(currentDoctor);
+          }
+      });
       P21.add(LApptmnts,BorderLayout.NORTH);
-      P21.add(Apptmnts );
-      P22.add(Can1Btn );
-      P22.add(ReschdBtn);
+      P22.add(VEButton);
       P2.add(P21);
       P2.add(P22);
       //
@@ -59,6 +64,11 @@ import com.example.Models.Person;
      //
      JPanel P4 = new JPanel();
      LogOutBtn = new JButton("Log Out");
+     LogOutBtn.addActionListener(new ActionListener() {
+         @Override
+         public void actionPerformed(ActionEvent e) {
+             dispose();  }
+     });
      P4.add(LogOutBtn,BorderLayout.SOUTH);
      //
  
@@ -79,23 +89,9 @@ import com.example.Models.Person;
      
      
  //Listeners here 
-     public class ReschdActionListener implements ActionListener{
- 
-         @Override
-         public void actionPerformed(ActionEvent e) {
-             new RescheduleInterface("Rescheduling");
-         }
-         
-     }
      
-     public class AccessActionListener implements ActionListener{
- 
-         @Override
-         public void actionPerformed(ActionEvent e2) {
-             new PatientRecordsInterface("Patient Records");
-         }
-         
-     }
+     
+     
      
       public class AddMedActionListener implements ActionListener{
  
@@ -109,70 +105,7 @@ import com.example.Models.Person;
      
      
  // 
-     
-     public class RescheduleInterface extends JFrame {
-         private JComboBox CBDate;
-         private String arrDate [] = { "Sat, 5:00PM 12/1/2025 ", "Mon, 5:30PM 12/3/2025"};
-         private JButton CnfrmBtn,RetBtn;
- 
-         public RescheduleInterface(String title)  {
-     super(title);
-     this.setSize(400,400);
-     this.setLocation(500,400);
-     this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-     JPanel P = (JPanel) this.getContentPane();
-     JPanel P1 = new JPanel(new FlowLayout());
-     CBDate = new JComboBox(arrDate);
-     CnfrmBtn = new JButton("Confirm");
-     RetBtn = new JButton("Return");
-     RetBtn.addActionListener(new ActionListener() {
-     @Override
-     public void actionPerformed(ActionEvent e) {
-         dispose();
-     }
- });
-     P.add(CBDate,BorderLayout.NORTH);
-     P1.add(CnfrmBtn);
-     P1.add(RetBtn);
-     P.add(P1);
-     
-     
-     this.pack();
-     this.show();
-             
-         }
-          }
-     
-       public class PatientRecordsInterface extends JFrame {
-         private JList TAPats;
-        private String[] arrRecord = {
-             "1 - Fahad Ali",
-             "2 - Sarah Mohammad",  };
-         private JButton AddBtn,DelBtn;
- 
-         public PatientRecordsInterface(String title)  {
-     super(title);
-     this.setSize(400,200);
-     this.setLocation(500,400);
-     this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-     JPanel P = (JPanel) this.getContentPane();
-     JPanel P1 = new JPanel(new FlowLayout());
-     TAPats = new JList(arrRecord);
-     AddBtn = new JButton("Add");
-     DelBtn = new JButton("Delete");
-     P.add(TAPats,BorderLayout.NORTH);
-     P1.add(AddBtn);
-     P1.add(DelBtn);
-     P.add(P1);
-     
-     
-     this.pack();
-     this.show();
-             
-         }
-         
-         
-         }
+    // Prescribtion Interface
         public class PrescribtionInterface extends JFrame {
          private JLabel LMed ;
          private JComboBox CBDate;
@@ -194,8 +127,8 @@ import com.example.Models.Person;
       LMed = new JLabel("Medication : ");
       TFPMeds = new JTextField(40);
       CnfrmBtn = new JButton("Confirm");
-      Can2Btn = new JButton("Cancel");
-     Can2Btn.addActionListener(new ActionListener() {
+      Can1Btn = new JButton("Cancel");
+     Can1Btn.addActionListener(new ActionListener() {
      @Override
      public void actionPerformed(ActionEvent e) {
          dispose();
@@ -207,7 +140,7 @@ import com.example.Models.Person;
       P2.add(LMed);
       P2.add(TFPMeds);
       P3.add(CnfrmBtn);
-      P3.add(Can2Btn);
+      P3.add(Can1Btn);
       P.add(P1);
       P.add(P2);
       P.add(P3);
@@ -221,7 +154,8 @@ import com.example.Models.Person;
     
      
      public static void main(String[] args) {
-       DoctorInterface DI = new DoctorInterface("Home Page");
+      // DoctorInterface DI = new DoctorInterface("Home Page");
         
      }
+     
  }

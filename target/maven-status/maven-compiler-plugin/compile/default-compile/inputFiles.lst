@@ -11,6 +11,8 @@ C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Dat
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Data\PatientsRecordsDbCommands.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Data\UsersDbCommands.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\DoctorInterface\DoctorInterface.java
+C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\DoctorInterface\DoctorShowAppointments.java
+C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\DoctorInterface\DoctorShowPatients.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Models\Appointment.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Models\Clinic.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Models\Doctor.java
