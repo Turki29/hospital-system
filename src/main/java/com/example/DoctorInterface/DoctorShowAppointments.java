@@ -113,21 +113,26 @@ public class DoctorShowAppointments extends JFrame {
         panel.add(new JLabel("Select Hour (24h):"));
         JComboBox<String> hourComboBox = new JComboBox<>();
         for (int i = 0; i < 24; i++) {
-            hourComboBox.addItem(String.format("%02d", i));
+            hourComboBox.addItem(i + "");
         }
         panel.add(hourComboBox);
 
         panel.add(new JLabel("Select Minutes:"));
         JComboBox<String> minuteComboBox = new JComboBox<>();
         for (int i = 0; i < 60; i += 5) { // Increment by 5 minutes
-            minuteComboBox.addItem(String.format("%02d", i));
+            minuteComboBox.addItem(i + "");
         }
         panel.add(minuteComboBox);
 
         int result = JOptionPane.showConfirmDialog(this, panel, "Reschedule Appointment", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (result == JOptionPane.OK_OPTION) {
             String newDate = (String) dayComboBox.getSelectedItem();
-            String newTime = hourComboBox.getSelectedItem() + ":" + minuteComboBox.getSelectedItem();
+            int hour = Integer.parseInt((String) hourComboBox.getSelectedItem());
+            String minutes = (String) minuteComboBox.getSelectedItem();
+            
+            String period = (hour < 12) ? "AM" : "PM";
+            int displayHour = (hour == 0) ? 12 : (hour > 12) ? hour - 12 : hour;
+            String newTime = displayHour + ":" + minutes + " " + period;
 
             db.rescheduleAppointment(apptId, newDate, newTime);
             loadAppointments();

@@ -13,14 +13,12 @@ public class DbConnection {
 
         String url = "jdbc:sqlite:hospital.db"; // اسم قاعدة البيانات
 
-        try{
+        try {
             this.db = DriverManager.getConnection(url);
-           
             
-            
-
+          
         } catch (SQLException e) {
-             JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 

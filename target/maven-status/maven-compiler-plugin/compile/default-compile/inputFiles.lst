@@ -8,6 +8,8 @@ C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\App
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Data\AppointmentsDbCommands.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Data\ClinicsDbCommands.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Data\DbConnection.java
+C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Data\DescriptionsDbCommands.java
+C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Data\NotificationsDbCommands.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Data\PatientsRecordsDbCommands.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Data\UsersDbCommands.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\DoctorInterface\DoctorInterface.java
@@ -15,10 +17,11 @@ C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Doc
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\DoctorInterface\DoctorShowPatients.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Models\Appointment.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Models\Clinic.java
+C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Models\Description.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Models\Doctor.java
+C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Models\Notification.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Models\Patient.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Models\PatientRecord.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\Models\Person.java
-C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\PatientInterface\PatientsAdder.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\PatientInterface\PatientsInterface.java
 C:\Users\Turki\Desktop\Java\visprg\hospital-system\src\main\java\com\example\RegisterPage.java

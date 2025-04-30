@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import com.example.AdminInterface.AdminInterface;
+import com.example.Data.DescriptionsDbCommands;
 import com.example.Data.UsersDbCommands;
 import com.example.DoctorInterface.DoctorInterface;
 import com.example.Models.Person;
@@ -116,10 +117,8 @@ public class UserInterface implements ActionListener {
     public static void main(String[] args) {
         
        
-
-        
-        
-           
+        DescriptionsDbCommands descDb = new DescriptionsDbCommands();
+       
             App frame = new App("Hospital");
         
          

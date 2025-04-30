@@ -14,7 +14,7 @@ import com.example.Models.Person;
 public class UsersDbCommands extends DbConnection {
 
     public UsersDbCommands() {
-        // this.InsertUser(new Person(-1, "trtsy", "email@email.com", "966507274092", "Asdqwe12", "admin", -1));
+        
     }
 
     public Person getUser(int givenId) {
@@ -119,14 +119,55 @@ public class UsersDbCommands extends DbConnection {
     }
 
     public boolean InsertUser(Person person) {
+        // Validate input data
+        if (person.getName().isEmpty() || person.getEmail().isEmpty() || 
+            person.getPassword().isEmpty() || person.getPhoneNumber().isEmpty() || person.getRole().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "All fields are required.", "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        // Username validation (at least 3 chars)
+        if (person.getName().length() < 3) {
+            JOptionPane.showMessageDialog(null, "Username must be at least 3 characters long.", "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        // Phone validation: either 10 digits starting with 05 or 12 digits starting with 9665
+        String phone = person.getPhoneNumber();
+        if (!(phone.matches("^05\\d{8}$") || phone.matches("^9665\\d{8}$"))) {
+            JOptionPane.showMessageDialog(null, "Phone number must be 10 digits starting with 05 or 12 digits starting with 9665.", 
+                                        "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        // Convert phone to 9665 format if it starts with 05
+        if (phone.startsWith("05")) {
+            phone = "966" + phone.substring(1);
+            person.setPhoneNumber(phone);
+        }
+
+        // Email validation (contains @ and .)
+        if (!person.getEmail().matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+            JOptionPane.showMessageDialog(null, "Please enter a valid email address.", "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        // Password validation (at least 8 chars, one uppercase, one lowercase, one number)
+        String password = person.getPassword();
+        if (password.length() < 8 || !password.matches(".*[A-Z].*") || 
+            !password.matches(".*[a-z].*") || !password.matches(".*[0-9].*")) {
+            JOptionPane.showMessageDialog(null, "Password must be at least 8 characters and contain at least one uppercase letter, one lowercase letter, and one number.", 
+                                        "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
         // Check for duplicate name, phone, or email
         String checkQuery = "SELECT COUNT(*) FROM users WHERE LOWER(name) = LOWER('" + person.getName() + 
                 "') OR phone = '" + person.getPhoneNumber() + 
                 "' OR LOWER(email) = LOWER('" + person.getEmail() + "')";
 
-        try {
-            Statement checkStmt = db.createStatement();
-            ResultSet rs = checkStmt.executeQuery(checkQuery);
+        try (Statement checkStmt = db.createStatement();
+             ResultSet rs = checkStmt.executeQuery(checkQuery)) {
             
             if (rs.next() && rs.getInt(1) > 0) {
                 JOptionPane.showMessageDialog(null, 
@@ -145,9 +186,10 @@ public class UsersDbCommands extends DbConnection {
                     person.getEmail() + "'," +
                     person.getClinicId() + ")";
 
-            Statement stmt = db.createStatement();
-            stmt.executeUpdate(query);
-            return true;
+            try (Statement stmt = db.createStatement()) {
+                stmt.executeUpdate(query);
+                return true;
+            }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Exception", JOptionPane.ERROR_MESSAGE);
         }
@@ -276,18 +318,52 @@ public class UsersDbCommands extends DbConnection {
                 return;
             }
 
-            // Update the appointment with the new day name and time
-            String updateQuery = "UPDATE appointments SET day = '" + newDayName + 
-                    "', time = '" + newTime + "' WHERE id = " + apptId + ";";
+            // Get the original appointment details before updating
+            String getOriginalQuery = "SELECT day, time, doctor_id, patient_id FROM appointments WHERE id = " + apptId + ";";
+            Statement getStmt = db.createStatement();
+            ResultSet originalRs = getStmt.executeQuery(getOriginalQuery);
+            
+            if (originalRs.next()) {
+                String oldDay = originalRs.getString("day");
+                String oldTime = originalRs.getString("time");
+                int doctorId = originalRs.getInt("doctor_id");
+                int patientId = originalRs.getInt("patient_id");
+                
+                // Update the appointment with the new day name and time
+                String updateQuery = "UPDATE appointments SET day = '" + newDayName + 
+                        "', time = '" + newTime + "' WHERE id = " + apptId + ";";
 
-            Statement updateStmt = db.createStatement();
-            int rowsAffected = updateStmt.executeUpdate(updateQuery);
+                Statement updateStmt = db.createStatement();
+                int rowsAffected = updateStmt.executeUpdate(updateQuery);
 
-            if (rowsAffected > 0) {
-                JOptionPane.showMessageDialog(null, 
-                        "Appointment rescheduled successfully", 
-                        "Success", 
-                        JOptionPane.INFORMATION_MESSAGE);
+                if (rowsAffected > 0) {
+                    // Send notification to doctor
+                    String doctorMsg = "Your appointment has been rescheduled from " + oldDay + " " + oldTime + 
+                                      " to " + newDayName + " " + newTime;
+                    String docNotifyQuery = "INSERT INTO notifications (message, user_id) VALUES ('" + 
+                                          doctorMsg + "', " + doctorId + ");";
+                    
+                    // Send notification to patient
+                    String patientMsg = "Your appointment has been rescheduled from " + oldDay + " " + oldTime + 
+                                       " to " + newDayName + " " + newTime;
+                    String patientNotifyQuery = "INSERT INTO notifications (message, user_id) VALUES ('" + 
+                                              patientMsg + "', " + patientId + ");";
+                    
+                    // Execute notification inserts
+                    Statement notifyStmt = db.createStatement();
+                    notifyStmt.executeUpdate(docNotifyQuery);
+                    notifyStmt.executeUpdate(patientNotifyQuery);
+                    
+                    JOptionPane.showMessageDialog(null, 
+                            "Appointment rescheduled successfully", 
+                            "Success", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(null, 
+                            "No appointment found with ID: " + apptId, 
+                            "Not Found", 
+                            JOptionPane.WARNING_MESSAGE);
+                }
             } else {
                 JOptionPane.showMessageDialog(null, 
                         "No appointment found with ID: " + apptId, 

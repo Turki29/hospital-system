@@ -6,6 +6,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -16,23 +18,27 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+import com.example.Data.ClinicsDbCommands;
 import com.example.Data.UsersDbCommands;
+import com.example.Models.Clinic;
 import com.example.Models.Person;
 
 public class AdminShowAddDoctorWindow extends JFrame {
     
     UsersDbCommands userDb;
-
+    ClinicsDbCommands clinicDb;
     private JTextField nameField, emailField, phoneField;
-    private JComboBox<String> specialtyComboBox, clinicComboBox;
+    private JComboBox<String> clinicsComboBox;
     private JPasswordField passwordField;
     private JButton addButton, cancelButton;
     
     // Sample data for dropdown menus
-    private String[] specialties = {"Cardiology", "Dermatology", "Neurology", "Orthopedics", "Pediatrics", "Psychiatry", "Ophthalmology"};
-    private String[] clinics = {"Main Clinic", "North Branch", "South Branch", "East Wing", "West Wing"};
+    
     
     public AdminShowAddDoctorWindow() {
+
+        clinicDb = new ClinicsDbCommands();
+
         setTitle("Add New Doctor");
         setSize(400, 350);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -78,16 +84,23 @@ public class AdminShowAddDoctorWindow extends JFrame {
         formPanel.add(new JLabel("Specialty:"), gbc);
         
         gbc.gridx = 1;
-        specialtyComboBox = new JComboBox<>(specialties);
-        formPanel.add(specialtyComboBox, gbc);
+
+        List<Clinic> clinics = new ArrayList<Clinic>();
+        clinics = clinicDb.getAllClinics();
+        
+        // Create specialtyComboBox with clinic specialties
+        clinicsComboBox = new JComboBox<>();
+        for (Clinic clinic : clinics) {
+            clinicsComboBox.addItem(clinic.getName());
+        }
+        formPanel.add(clinicsComboBox, gbc);
         
         gbc.gridx = 0;
         gbc.gridy = 4;
         formPanel.add(new JLabel("Clinic Name:"), gbc);
         
         gbc.gridx = 1;
-        clinicComboBox = new JComboBox<>(clinics);
-        formPanel.add(clinicComboBox, gbc);
+        
         
         gbc.gridx = 0;
         gbc.gridy = 5;
@@ -116,20 +129,20 @@ public class AdminShowAddDoctorWindow extends JFrame {
                 String name = nameField.getText();
                 String email = emailField.getText();
                 String phone = phoneField.getText();
-                String specialty = (String) specialtyComboBox.getSelectedItem();
-                String clinic = (String) clinicComboBox.getSelectedItem();
+                
+                String clinic = (String) clinicsComboBox.getSelectedItem();
                 String password = new String(passwordField.getPassword());
                 
                 // Validate fields
                 if(name.isEmpty() || email.isEmpty() || phone.isEmpty() || 
-                   password.isEmpty() || specialty == null || clinic == null) {
+                   password.isEmpty() || clinic == null) {
                     JOptionPane.showMessageDialog(AdminShowAddDoctorWindow.this, 
                         "Please fill in all fields.", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
                 
                 userDb = new UsersDbCommands();
-                if(userDb.InsertUser(new Person(-1, name, email, phone, password, "doctor", clinicComboBox.getSelectedIndex())))
+                if(userDb.InsertUser(new Person(-1, name, email, phone, password, "doctor", clinicsComboBox.getSelectedIndex() + 1)))
                 {
                     JOptionPane.showMessageDialog(AdminShowAddDoctorWindow.this, 
                     "Doctor added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
@@ -138,6 +151,10 @@ public class AdminShowAddDoctorWindow extends JFrame {
                 else {
                     JOptionPane.showMessageDialog(AdminShowAddDoctorWindow.this, 
                         "Failed to add doctor.", "Error", JOptionPane.ERROR_MESSAGE);
+
+                        JOptionPane.showMessageDialog(AdminShowAddDoctorWindow.this, 
+                        name + " " + email + " " + phone + " " + password + " " + (clinicsComboBox.getSelectedIndex() + 1) + " "
+                         , "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -157,8 +174,8 @@ public class AdminShowAddDoctorWindow extends JFrame {
         nameField.setText("");
         emailField.setText("");
         phoneField.setText("");
-        specialtyComboBox.setSelectedIndex(0);
-        clinicComboBox.setSelectedIndex(0);
+        clinicsComboBox.setSelectedIndex(0);
+        
         passwordField.setText("");
     }
 }

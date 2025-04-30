@@ -23,7 +23,7 @@ public class RegisterPage extends JFrame {
     private JTextField txtEmail, txtUsername, txtPhone;
     private JPasswordField txtPassword;
     private JRadioButton male, female;
-    private JComboBox<String> ageCombo;
+    private JComboBox<String> dayCombo, monthCombo, yearCombo;
     private JButton btnCreate, btnCancel;
     private UsersDbCommands userDb;
 
@@ -31,11 +31,11 @@ public class RegisterPage extends JFrame {
         super(title);
 
         setTitle("Create Account");
-        setSize(350, 250);
+        setSize(460, 290);
         setLocation(700, 350);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         userDb = new UsersDbCommands();
-        
+
         JPanel p1 = (JPanel) getContentPane();
         p1.setLayout(new GridLayout(7, 2, 5, 5));
 
@@ -44,12 +44,12 @@ public class RegisterPage extends JFrame {
 
         lblUsername = new JLabel("  Username:");
         txtUsername = new JTextField();
-        
-        lblPhone = new JLabel("  Phone:");
-        txtPhone = new JTextField();
 
         lblPassword = new JLabel("  Password:");
         txtPassword = new JPasswordField();
+        
+        lblPhone = new JLabel("  Phone number:");
+        txtPhone = new JTextField();
 
         lblGender = new JLabel("  Gender:");
         JPanel genderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -61,49 +61,72 @@ public class RegisterPage extends JFrame {
         genderPanel.add(male);
         genderPanel.add(female);
 
-        lblAge = new JLabel("  Age:");
-        String[] ages = new String[130];
-        for (int i = 0; i < 130; i++) {
-            ages[i] = String.valueOf(i + 1); // Convert numbers to String
+        lblAge = new JLabel("  Birth Date:");
+
+        // Days
+        String[] days = new String[31];
+        for (int i = 0; i < 31; i++) {
+          days[i] = String.valueOf(i + 1);
         }
-        ageCombo = new JComboBox<>(ages);
+        dayCombo = new JComboBox<>(days);
 
-        btnCancel = new JButton("Cancel");
+        // Months
+        String[] months = {
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        };
+        monthCombo = new JComboBox<>(months);
+
+        // Years
+        int currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
+        String[] years = new String[150];
+        for (int i = 0; i < 150; i++) {
+            years[i] = String.valueOf(currentYear - i);
+        }
+        yearCombo = new JComboBox<>(years);
+
+        JPanel datePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        datePanel.add(dayCombo);
+        datePanel.add(monthCombo);
+        datePanel.add(yearCombo);
+     
         btnCreate = new JButton("Create");
-
+        btnCancel = new JButton("Cancel");
+    
         p1.add(lblEmail);
         p1.add(txtEmail);
-        p1.add(lblPhone);
-        p1.add(txtPhone);
         p1.add(lblUsername);
         p1.add(txtUsername);
         p1.add(lblPassword);
         p1.add(txtPassword);
+        p1.add(lblPhone);
+        p1.add(txtPhone);     
         p1.add(lblGender);
         p1.add(genderPanel);
         p1.add(lblAge);
-        p1.add(ageCombo);
+        p1.add(datePanel);
+        p1.add(btnCancel); 
         p1.add(btnCreate);
-        p1.add(btnCancel);
-
+        
         // Button actions
         btnCreate.addActionListener(e -> createAccount());
         btnCancel.addActionListener(e -> dispose());
-
+        
         setVisible(true);
     }
-
-    // Connect to SQLite database
-    
 
     // Create the user account and insert into the database
     private void createAccount() {
         String email = txtEmail.getText();
-        String phone  = txtPhone.getText();
+        String phone = txtPhone.getText();
         String username = txtUsername.getText();
         String password = new String(txtPassword.getPassword());
         String gender = male.isSelected() ? "Male" : female.isSelected() ? "Female" : "";
-        String age = ageCombo.getSelectedItem().toString();
+        
+        // Calculate age from birth date
+        int year = Integer.parseInt((String)yearCombo.getSelectedItem());
+        int currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
+        int age = currentYear - year;
         
         if (email.isEmpty() || username.isEmpty() || password.isEmpty() || phone.isEmpty() || gender.isEmpty()) {
             JOptionPane.showMessageDialog(this, "All fields are required.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -120,8 +143,6 @@ public class RegisterPage extends JFrame {
         if (phone.startsWith("05")) {
             phone = "966" + phone.substring(1);
         }
-
-
 
         // Email validation (contains @ and .)
         if (!email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
@@ -144,21 +165,16 @@ public class RegisterPage extends JFrame {
         }
 
         // Age validation (above 15)
-        int selectedAge = Integer.parseInt(age);
-        if (selectedAge <= 15) {
+        if (age <= 15) {
             JOptionPane.showMessageDialog(this, "You must be older than 15 to register.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-       if(userDb.InsertUser(new Person(-1, username, email, phone, password, "patient", -1)))
-       {
-        JOptionPane.showMessageDialog(this, "Patient user added successfully, please login in log in window.", "Success", JOptionPane.INFORMATION_MESSAGE);
-       }
-       else {
-        JOptionPane.showMessageDialog(this, "Failed to add patient user.", "Exception", JOptionPane.ERROR_MESSAGE);
-       }
-       
-       
+        if(userDb.InsertUser(new Person(-1, username, email, phone, password, "patient", -1))) {
+            JOptionPane.showMessageDialog(this, "Patient user added successfully, please login in log in window.", "Success", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "Failed to add patient user.", "Exception", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public static void main(String[] args) {
