@@ -9,18 +9,21 @@ import java.util.List;
 import java.util.ArrayList;
 
 import com.example.Data.DescriptionsDbCommands;
+import com.example.Data.NotificationsDbCommands;
 import com.example.Data.UsersDbCommands;
 import com.example.Models.Description;
+import com.example.Models.Notification;
 import com.example.Models.Patient;
 import com.example.Models.Person;
 
 public class DoctorInterface extends JFrame {
-    private JButton AccessBtn, AddMedBtn, Can1Btn, LogOutBtn, VEButton;
+    private JButton AccessBtn, AddMedBtn, Can1Btn, LogOutBtn, VEButton, btnNotifications;
     private JComboBox Apptmnts, PatPick;
 
     private JLabel LDocName, PMeds, PName, LApptmnts;
     private JTextField TFPMeds;
     private Person currentDoctor;
+    private NotificationsDbCommands notifyDb;
 
     public DoctorInterface(String title, Person currentDoctor) {
         super(title);
@@ -52,10 +55,8 @@ public class DoctorInterface extends JFrame {
                 new DoctorShowAppointments(currentDoctor);
             }
         });
-        P21.add(LApptmnts, BorderLayout.NORTH);
-        P22.add(VEButton);
-        P2.add(P21);
-        P2.add(P22);
+
+       
         //
         JPanel P3 = new JPanel(new FlowLayout(FlowLayout.LEFT));
         PMeds = new JLabel("Prescribe Medication : ");
@@ -73,7 +74,84 @@ public class DoctorInterface extends JFrame {
             }
         });
         P4.add(LogOutBtn, BorderLayout.SOUTH);
+
+        notifyDb = new NotificationsDbCommands();
+
+        List<Notification> notifications = notifyDb.getUserNotifications(currentDoctor.id);
+        int unreadNotifications = 0;
+        for (Notification notification : notifications) {
+            if (!notification.isRead())
+                unreadNotifications++;
+
+        }
+
+        if (unreadNotifications == 0)
+            btnNotifications = new JButton("Notifications");
+        else
+            btnNotifications = new JButton("Notifications(" + unreadNotifications + ")");
+
+        btnNotifications.addActionListener(e -> {
+            JDialog notificationDialog = new JDialog(this, "Notifications", true);
+            notificationDialog.setLayout(new BorderLayout());
+
+            JPanel notificationPanel = new JPanel();
+            notificationPanel.setLayout(new GridLayout(notifications.size(), 1, 0, 1));
+            notificationPanel.setBackground(Color.WHITE);
+            if (notifications.size() == 0) {
+                JPanel panel = new JPanel(new BorderLayout());
+                panel.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)),
+                        BorderFactory.createEmptyBorder(10, 15, 10, 15)));
+
+                JLabel label = new JLabel("You have no notifications");
+                label.setFont(new Font("Arial", Font.PLAIN, 14));
+                panel.add(label, BorderLayout.CENTER);
+
+                panel.setBackground(Color.WHITE);
+                notificationPanel.add(panel);
+            }
+            for (Notification notification : notifications) {
+                JPanel panel = new JPanel(new BorderLayout());
+                panel.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)),
+                        BorderFactory.createEmptyBorder(10, 15, 10, 15)));
+
+                JLabel label = new JLabel(notification.message);
+                label.setFont(new Font("Arial", Font.PLAIN, 14));
+                if (!notification.read) {
+                    label.setForeground(Color.RED);
+                }
+                panel.add(label, BorderLayout.CENTER);
+
+                panel.setBackground(Color.WHITE);
+                notificationPanel.add(panel);
+
+            }
+
+            JScrollPane scrollPane = new JScrollPane(notificationPanel);
+            notificationDialog.add(scrollPane, BorderLayout.CENTER);
+
+            JButton closeButton = new JButton("Close");
+            closeButton.addActionListener(event -> notificationDialog.dispose());
+            JPanel buttonPanel = new JPanel();
+            buttonPanel.add(closeButton);
+            notificationDialog.add(buttonPanel, BorderLayout.SOUTH);
+
+            notificationDialog.setSize(400, 300);
+            notificationDialog.setLocationRelativeTo(this);
+            notificationDialog.setVisible(true);
+
+            // Update the notification button after viewing
+            notifyDb.markUserNotificationsAsRead(currentDoctor.id);
+            btnNotifications.setText("Notifications");
+        });
         //
+
+        P21.add(LApptmnts, BorderLayout.NORTH);
+        P21.add(btnNotifications);
+        P22.add(VEButton);
+        P2.add(P21);
+        P2.add(P22);
 
         MainP.add(P1);
 
@@ -128,6 +206,7 @@ public class DoctorInterface extends JFrame {
 
             userDb = new UsersDbCommands();
             descDb = new DescriptionsDbCommands();
+
             final List<Person> doctorsPatients = userDb.getDoctorsPatients(currentDoctor.id);
 
             for (Person patient : doctorsPatients) {
@@ -143,8 +222,7 @@ public class DoctorInterface extends JFrame {
             });
 
             CnfrmBtn.addActionListener(e -> {
-                if(TFPMeds.getText().trim().isEmpty() )
-                {
+                if (TFPMeds.getText().trim().isEmpty()) {
                     JOptionPane.showMessageDialog(null, "Please write a prescribtion");
                     return;
                 }
@@ -158,18 +236,17 @@ public class DoctorInterface extends JFrame {
                         break;
                     }
                 }
-                
+
                 if (selectedPatient == null) {
                     JOptionPane.showMessageDialog(null, "Patient not selected or not found in your patients list");
                     return;
                 }
-                
-                int prescriptionId = descDb.insertDescription(new Description(-1, TFPMeds.getText(), selectedPatient.id));
-                JOptionPane.showMessageDialog(null, "Prescription with id " + prescriptionId +  " for patient " + selectedPatientName +
-                 "Added successfully");
 
-                
-
+                int prescriptionId = descDb
+                        .insertDescription(new Description(-1, TFPMeds.getText(), selectedPatient.id));
+                JOptionPane.showMessageDialog(null,
+                        "Prescription with id " + prescriptionId + " for patient " + selectedPatientName +
+                                "Added successfully");
 
             });
 

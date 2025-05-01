@@ -111,6 +111,7 @@ public class AdminInterface extends JFrame {
         buttonsPanel.add(btnShowManageDoctors);
         buttonsPanel.add(btnShowManagePatients);
         buttonsPanel.add(btnShowManageSchedule);
+        buttonsPanel.add(btnShowManageSchedule);
         
         // Footer panel
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
