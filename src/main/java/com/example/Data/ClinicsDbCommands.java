@@ -1,5 +1,6 @@
 package com.example.Data;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,23 +13,32 @@ import javax.swing.JOptionPane;
 import com.example.Models.Clinic;
 import com.example.Models.Person;
 
-public class ClinicsDbCommands extends DbConnection {
+public class ClinicsDbCommands {
+
+    private DatabaseConnection dbConnection = new DatabaseConnection();
+
 
     public List<Clinic> getAllClinics() {
         String query = "SELECT * FROM clinics ORDER BY name";
         List<Clinic> clinics = new ArrayList<>();
+        Connection connection = null;
         
-        try (Statement stmt = db.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-            
-            while (rs.next()) {
-                clinics.add(new Clinic(
-                    rs.getInt("id"),
-                    rs.getString("name")
-                ));
+        try {
+            connection = dbConnection.getConnection();
+            try (Statement stmt = connection.createStatement();
+                 ResultSet rs = stmt.executeQuery(query)) {
+                
+                while (rs.next()) {
+                    clinics.add(new Clinic(
+                        rs.getInt("id"),
+                        rs.getString("name")
+                    ));
+                }
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error fetching clinics: " + e.getMessage());
+        } finally {
+            dbConnection.closeConnection();
         }
         
         return clinics;
@@ -36,20 +46,26 @@ public class ClinicsDbCommands extends DbConnection {
     
     public Clinic getClinic(int clinicId) {
         String query = "SELECT * FROM clinics WHERE id = ?";
+        Connection connection = null;
         
-        try (PreparedStatement pstmt = db.prepareStatement(query)) {
-            pstmt.setInt(1, clinicId);
-            
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return new Clinic(
-                        rs.getInt("id"),
-                        rs.getString("name")
-                    );
+        try {
+            connection = dbConnection.getConnection();
+            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+                pstmt.setInt(1, clinicId);
+                
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        return new Clinic(
+                            rs.getInt("id"),
+                            rs.getString("name")
+                        );
+                    }
                 }
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error fetching clinic: " + e.getMessage());
+        } finally {
+            dbConnection.closeConnection();
         }
         
         return null;
@@ -61,44 +77,50 @@ public class ClinicsDbCommands extends DbConnection {
                       "WHERE cd.clinic_id = ? AND u.role = 'doctor' ORDER BY u.name";
         
         List<Person> doctors = new ArrayList<>();
+        Connection connection = null;
         
-        try (PreparedStatement pstmt = db.prepareStatement(query)) {
-            pstmt.setInt(1, clinicId);
-            
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    doctors.add(new Person(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("password"),
-                        rs.getString("role"),
-                        rs.getString("phone"),
-                        rs.getString("email"),
-                        rs.getInt("clinic_id")
-                    ));
+        try {
+            connection = dbConnection.getConnection();
+            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+                pstmt.setInt(1, clinicId);
+                
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    while (rs.next()) {
+                        doctors.add(new Person(
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getString("password"),
+                            rs.getString("role"),
+                            rs.getString("phone"),
+                            rs.getString("email"),
+                            rs.getInt("clinic_id")
+                        ));
+                    }
                 }
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error fetching doctors: " + e.getMessage());
+        } finally {
+            dbConnection.closeConnection();
         }
         
         return doctors;
     }
 
-   
-    
-
     public boolean DeleteClinic(int id) {
         String query = "DELETE FROM clinics WHERE Id = " + id + ";";
+        Connection connection = null;
 
         try {
-            Statement stmt = db.createStatement();
+            connection = dbConnection.getConnection();
+            Statement stmt = connection.createStatement();
             stmt.executeUpdate(query);
             return true;
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Exception", JOptionPane.ERROR_MESSAGE);
-
+            return false;
+        } finally {
+            dbConnection.closeConnection();
         }
-        return false;
     }
 }

@@ -53,46 +53,71 @@ public class DoctorShowPatients extends JFrame //implements ActionListener
         // search functionality
         btnSearch.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String query = "role = 'doctor'";
-                StringBuilder queryBuilder = new StringBuilder(query);
-                
-
-                if (!tfPatientID.getText().trim().isEmpty()) {
-                    queryBuilder.append(" AND id = '").append(tfPatientID.getText().trim()).append("'");
-                }
-
-                if (!tfName.getText().trim().isEmpty()) {
-                    queryBuilder.append(" AND name LIKE '%").append(tfName.getText().trim()).append("%'");
-                }
-
-                if (!tfEmail.getText().trim().isEmpty()) {
-                    queryBuilder.append(" AND email LIKE '%").append(tfEmail.getText().trim()).append("%'");
-                }
-
-                if (!tfPhone.getText().trim().isEmpty()) {
-                    queryBuilder.append(" AND phoneNumber LIKE '%").append(tfPhone.getText().trim()).append("%'");
-                }
-
-                
-                
-              
                 // Clear the existing table data
                 tableModel.setRowCount(0);
 
-                // Populate the table with the search results
-                if (patientsList != null && !patientsList.isEmpty()) {
-                    for (Person patient : patientsList) {
-                        tableModel.addRow(new Object[] {
-                                patient.id,
-                                patient.name,
-                                patient.email,
-                                patient.phoneNumber,
-                                patient.password,
-                                patient.role,
-                                patient.clinicId
-                        });
+                // Create a filtered list based on search criteria
+                java.util.List<Person> filteredList = new java.util.ArrayList<>();
+                
+                for (Person patient : patientsList) {
+                    boolean matches = true;
+                    
+                    // Check ID if provided
+                    if (!tfPatientID.getText().trim().isEmpty()) {
+                        try {
+                            int searchId = Integer.parseInt(tfPatientID.getText().trim());
+                            if (patient.id != searchId) {
+                                matches = false;
+                            }
+                        } catch (NumberFormatException ex) {
+                            matches = false;
+                        }
+                    }
+                    
+                    // Check name if provided
+                    if (matches && !tfName.getText().trim().isEmpty()) {
+                        if (!patient.name.toLowerCase().contains(tfName.getText().trim().toLowerCase())) {
+                            matches = false;
+                        }
+                    }
+                    
+                    // Check email if provided
+                    if (matches && !tfEmail.getText().trim().isEmpty()) {
+                        if (!patient.email.toLowerCase().contains(tfEmail.getText().trim().toLowerCase())) {
+                            matches = false;
+                        }
+                    }
+                    
+                    // Check phone if provided
+                    if (matches && !tfPhone.getText().trim().isEmpty()) {
+                        if (!patient.phoneNumber.contains(tfPhone.getText().trim())) {
+                            matches = false;
+                        }
+                    }
+                    
+                    if (matches) {
+                        filteredList.add(patient);
                     }
                 }
+                
+                // Populate the table with the search results or full list if all fields are empty
+                java.util.List<Person> displayList = (tfPatientID.getText().trim().isEmpty() && 
+                                                     tfName.getText().trim().isEmpty() && 
+                                                     tfEmail.getText().trim().isEmpty() && 
+                                                     tfPhone.getText().trim().isEmpty()) 
+                                                     ? patientsList : filteredList;
+                                                     
+                for (Person patient : displayList) {
+                    tableModel.addRow(new Object[] {
+                            patient.id,
+                            patient.name,
+                            patient.email,
+                            patient.phoneNumber,
+                            patient.password,
+                            patient.phoneNumber
+                    });
+                }
+                
                 // Refresh the table display
                 table.repaint();
             }
@@ -117,7 +142,7 @@ public class DoctorShowPatients extends JFrame //implements ActionListener
         inputPanel.add(btnSearch);
         inputPanel.add(btnAdd);
 
-        String[] columns = { "ID", "Name", "Email", "Phone", "Password", "Role"};
+        String[] columns = { "ID", "Name", "Email", "Phone", "Password", "Phone"};
 
         // Initialize the table model and table
         tableModel = new DefaultTableModel(columns, 0);
@@ -125,7 +150,7 @@ public class DoctorShowPatients extends JFrame //implements ActionListener
 
         // Populate the table with patient data
         // Assuming there's a method to get patient from the database
-        patientsList = userDb.getUsers("role = 'patient'"); // Replace with actual method to get patient
+        
         if (patientsList != null) {
             for (Person patient : patientsList) {
                 tableModel.addRow(new Object[] {
@@ -134,8 +159,7 @@ public class DoctorShowPatients extends JFrame //implements ActionListener
                         patient.email,
                         patient.phoneNumber,
                         patient.password,
-                        patient.role,
-                        patient.clinicId
+                        patient.phoneNumber
                 });
             }
         }

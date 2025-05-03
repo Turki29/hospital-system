@@ -81,48 +81,55 @@ public class PatientsInterface extends JFrame {
             btnNotifications = new JButton("Notifications(" + unreadNotifications + ")");
 
         btnNotifications.addActionListener(e -> {
+            // Get fresh notifications when button is clicked
+            List<Notification> currentNotifications = notfiyDb.getUserNotifications(patient.id);
             JDialog notificationDialog = new JDialog(this, "Notifications", true);
             notificationDialog.setLayout(new BorderLayout());
 
             JPanel notificationPanel = new JPanel();
-            notificationPanel.setLayout(new GridLayout(notifications.size(), 1, 0, 1));
+            notificationPanel.setLayout(new GridLayout(currentNotifications.size() > 0 ? currentNotifications.size() : 1, 1, 0, 1));
             notificationPanel.setBackground(Color.WHITE);
-            if (notifications.size() == 0) {
-                JPanel panel = new JPanel(new BorderLayout());
-                panel.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)),
-                        BorderFactory.createEmptyBorder(10, 15, 10, 15)));
+            if (currentNotifications.isEmpty()) {
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)),
+                BorderFactory.createEmptyBorder(10, 15, 10, 15)));
 
-                JLabel label = new JLabel("You have no notifications");
-                label.setFont(new Font("Arial", Font.PLAIN, 14));
-                panel.add(label, BorderLayout.CENTER);
+            JLabel label = new JLabel("You have no notifications");
+            label.setFont(new Font("Arial", Font.PLAIN, 14));
+            panel.add(label, BorderLayout.CENTER);
 
-                panel.setBackground(Color.WHITE);
-                notificationPanel.add(panel);
+            panel.setBackground(Color.WHITE);
+            notificationPanel.add(panel);
             }
-            for (Notification notification : notifications) {
-                JPanel panel = new JPanel(new BorderLayout());
-                panel.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)),
-                        BorderFactory.createEmptyBorder(10, 15, 10, 15)));
+            for (Notification notification : currentNotifications) {
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)),
+                BorderFactory.createEmptyBorder(10, 15, 10, 15)));
 
-                JLabel label = new JLabel(notification.message);
-                label.setFont(new Font("Arial", Font.PLAIN, 14));
-                if (!notification.read) {
-                    label.setForeground(Color.RED);
-                }
-                panel.add(label, BorderLayout.CENTER);
+            JLabel label = new JLabel(notification.message);
+            label.setFont(new Font("Arial", Font.PLAIN, 14));
+            if (!notification.read) {
+                label.setForeground(Color.RED);
+            }
+            panel.add(label, BorderLayout.CENTER);
 
-                panel.setBackground(Color.WHITE);
-                notificationPanel.add(panel);
-
+            panel.setBackground(Color.WHITE);
+            notificationPanel.add(panel);
             }
 
             JScrollPane scrollPane = new JScrollPane(notificationPanel);
             notificationDialog.add(scrollPane, BorderLayout.CENTER);
 
             JButton closeButton = new JButton("Close");
-            closeButton.addActionListener(event -> notificationDialog.dispose());
+            closeButton.addActionListener(event -> {
+            // Mark as read when closing
+            notfiyDb.markUserNotificationsAsRead(patient.id);
+            btnNotifications.setText("Notifications");
+            notificationDialog.dispose();
+            });
+            
             JPanel buttonPanel = new JPanel();
             buttonPanel.add(closeButton);
             notificationDialog.add(buttonPanel, BorderLayout.SOUTH);
@@ -130,10 +137,6 @@ public class PatientsInterface extends JFrame {
             notificationDialog.setSize(400, 300);
             notificationDialog.setLocationRelativeTo(this);
             notificationDialog.setVisible(true);
-
-            // Update the notification button after viewing
-            notfiyDb.markUserNotificationsAsRead(patient.id);
-            btnNotifications.setText("Notifications");
         });
 
         buttonsPanel.add(btnBookAppointment);
@@ -266,7 +269,7 @@ public class PatientsInterface extends JFrame {
 
         private JTable appointmentsTable;
         private DefaultTableModel tableModel;
-        private JButton cancelBtn, rescheduleBtn, backBtn;
+        private JButton cancelBtn, rescheduleBtn, backBtn, btnRefresh;
         private AppointmentsDbCommands appointmentDb;
         private UsersDbCommands userDb;
 
@@ -274,9 +277,9 @@ public class PatientsInterface extends JFrame {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-
+            // Initialize database commands each time the view is opened
             userDb = new UsersDbCommands();
-            this.appointmentDb = new AppointmentsDbCommands();
+            appointmentDb = new AppointmentsDbCommands();
 
             setLayout(new BorderLayout());
             setSize(700, 400);
@@ -298,9 +301,18 @@ public class PatientsInterface extends JFrame {
             cancelBtn = new JButton("Cancel Appointment");
             rescheduleBtn = new JButton("Reschedule");
             backBtn = new JButton("Back");
+            btnRefresh = new JButton("Refresh");
+
+            btnRefresh.addActionListener(e2 -> {
+            // Reinitialize database connections before refreshing
+            userDb = new UsersDbCommands();
+            appointmentDb = new AppointmentsDbCommands();
+            loadAppointments();
+            });
 
             buttonPanel.add(cancelBtn);
             buttonPanel.add(rescheduleBtn);
+            buttonPanel.add(btnRefresh);
             buttonPanel.add(backBtn);
             add(buttonPanel, BorderLayout.SOUTH);
 
@@ -308,25 +320,25 @@ public class PatientsInterface extends JFrame {
             cancelBtn.addActionListener(ee -> cancelSelectedAppointment());
             rescheduleBtn.addActionListener(ee -> rescheduleSelectedAppointment());
             backBtn.addActionListener(ee -> dispose());
-
+            
             setVisible(true);
         }
 
         private void loadAppointments() {
             tableModel.setRowCount(0);
+            // Get fresh data from database
             List<Appointment> appointments = appointmentDb.getAppointmentsForPatient(patient.id);
             
             for (Appointment appointment : appointments) {
-                Person doctor = userDb.getUser(appointment.getDoctorId());
-                String doctorName = doctor.getName();
-                tableModel.addRow(new Object[] {
-                        appointment.getId(),
-                        doctorName,
-                        appointment.getDay(),
-                        appointment.getTime()
-                });
+            Person doctor = userDb.getUser(appointment.getDoctorId());
+            String doctorName = doctor.getName();
+            tableModel.addRow(new Object[] {
+                appointment.getId(),
+                doctorName,
+                appointment.getDay(),
+                appointment.getTime()
+            });
             }
-
         }
 
         private void cancelSelectedAppointment() {
