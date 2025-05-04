@@ -31,7 +31,7 @@ public class DescriptionsDbCommands {
                     // Send notification to the patient
                     String notificationSql = "INSERT INTO notifications (message, user_id) VALUES (?, ?)";
                     try (PreparedStatement notificationStmt = connection.prepareStatement(notificationSql)) {
-                        notificationStmt.setString(1, "A new description has been added to your record");
+                        notificationStmt.setString(1, "A new prescribtion with id "+ description.id +" has been added to your record");
                         notificationStmt.setInt(2, description.getPatient_id());
                         notificationStmt.executeUpdate();
                     }

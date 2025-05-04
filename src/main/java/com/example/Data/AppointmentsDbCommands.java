@@ -8,6 +8,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import com.example.Models.Appointment;
 import com.example.Models.Person;
 
@@ -26,7 +28,39 @@ public class AppointmentsDbCommands {
                 pstmt.setInt(3, a.getClinicId());   
                 pstmt.setString(4, a.getDay());
                 pstmt.setString(5, a.getTime());
-                pstmt.executeUpdate();
+                int rowsAffected = pstmt.executeUpdate();
+
+                 if (rowsAffected > 0) {
+                            // Send notification to doctor
+                            String doctorMsg = "Your patient with id " +  a.getPatientId()+ "has booked appointment at: "+
+                             a.getDay() + " " + a.getTime();
+                            String docNotifyQuery = "INSERT INTO notifications (message, user_id) VALUES ('" + 
+                                                doctorMsg + "', " + a.getDoctorId() + ");";
+                            
+                            // Send notification to patient
+                            String patientMsg = "Your appointment has been booked at " + a.getDay() + " " + a.getTime();
+                                            
+                            String patientNotifyQuery = "INSERT INTO notifications (message, user_id) VALUES ('" + 
+                                                    patientMsg + "', " + a.getPatientId() + ");";
+                            
+                            // Execute notification inserts
+                            try (Statement notifyStmt = db.createStatement()) {
+                                notifyStmt.executeUpdate(docNotifyQuery);
+                                notifyStmt.executeUpdate(patientNotifyQuery);
+                            }
+                            
+                            JOptionPane.showMessageDialog(null, 
+                                    "Appointment booked successfully", 
+                                    "Success", 
+                                    JOptionPane.INFORMATION_MESSAGE);
+                        } else {
+                            JOptionPane.showMessageDialog(null, 
+                                    "No appointment found with ID: " + a.getId(), 
+                                    "Not Found", 
+                                    JOptionPane.WARNING_MESSAGE);
+                        }
+
+
                 return true;
             }
         } catch (SQLException e) {
@@ -344,6 +378,36 @@ public class AppointmentsDbCommands {
                     System.out.println("⚠️ No appointments were deleted. ID might not exist: " + id);
                     return false;
                 }
+
+                if (rowsAffected > 0) {
+                    // Send notification to doctor
+                    String doctorMsg = "Your appointment with id " + id+ "has been canceled";
+                    String docNotifyQuery = "INSERT INTO notifications (message, user_id) VALUES ('" + 
+                                        doctorMsg + "', " + id + ");";
+                    
+                    // Send notification to patient
+                    String patientMsg =  "Your appointment with id " + id+ "has been canceled";
+                                    
+                    String patientNotifyQuery = "INSERT INTO notifications (message, user_id) VALUES ('" + 
+                                            patientMsg + "', " + id + ");";
+                    
+                    // Execute notification inserts
+                    try (Statement notifyStmt = db.createStatement()) {
+                        notifyStmt.executeUpdate(docNotifyQuery);
+                        notifyStmt.executeUpdate(patientNotifyQuery);
+                    }
+                    
+                    JOptionPane.showMessageDialog(null, 
+                            "Appointment canceled successfully", 
+                            "Success", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(null, 
+                            "No appointment found with ID: " + id, 
+                            "Not Found", 
+                            JOptionPane.WARNING_MESSAGE);
+                }
+
                 return true;
             }
         } catch (SQLException e) {
