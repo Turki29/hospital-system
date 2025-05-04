@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.ArrayList;
 public class AdminShowSchedules extends JFrame{
     JTextField tfID, tfDoctorName, tfPatientName, tfDate, tfTime;
-    JButton btnSearch, btnAdd;
+    JButton btnSearch;
     JTable table;
     DefaultTableModel tableModel;
     AppointmentsDbCommands appointmentDb;
@@ -37,7 +37,7 @@ public class AdminShowSchedules extends JFrame{
         tfDate = new JTextField(10);
         tfTime = new JTextField(10);
 
-        btnAdd = new JButton("Add");
+
         btnSearch = new JButton("Search");
         
         // search functionality
@@ -83,13 +83,7 @@ public class AdminShowSchedules extends JFrame{
             }
         });
         
-        // add functionality
-        btnAdd.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e)
-            {
-                new AdminShowAddDoctorWindow();
-            }
-        });
+        
         JPanel inputPanel = new JPanel(new FlowLayout());
         inputPanel.add(lblID);
         inputPanel.add(tfID);
@@ -102,7 +96,7 @@ public class AdminShowSchedules extends JFrame{
         inputPanel.add(lblTime);
         inputPanel.add(tfTime);
         inputPanel.add(btnSearch);
-        inputPanel.add(btnAdd);
+        
 
         String[] columns = {"ID","Clinic","Doctor","Patient","Day","Time"};
 
