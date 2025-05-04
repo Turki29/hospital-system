@@ -260,11 +260,15 @@ public class PatientsInterface extends JFrame {
                     int clinicId = appointmentDb.getClinicIdByName(selectedDepartment);
 
                     List<Person> doctors = appointmentDb.getDoctorsByClinic(clinicId);
-
+                    String docotrs = clinicId + " ";
                     doctorCombo.removeAllItems();
                     for (Person doctor : doctors) {
                         doctorCombo.addItem(doctor.name);
+                        docotrs += doctor.name + "  ";
+
                     }
+
+                    JOptionPane.showMessageDialog(null, docotrs);
 
                 }
 

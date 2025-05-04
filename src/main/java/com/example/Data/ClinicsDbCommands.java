@@ -19,7 +19,7 @@ public class ClinicsDbCommands {
 
 
     public List<Clinic> getAllClinics() {
-        String query = "SELECT * FROM clinics ORDER BY name";
+        String query = "SELECT * FROM clinics ORDER BY id ASC";
         List<Clinic> clinics = new ArrayList<>();
         Connection connection = null;
         

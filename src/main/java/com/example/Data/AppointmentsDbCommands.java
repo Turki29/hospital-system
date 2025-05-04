@@ -157,7 +157,7 @@ public class AppointmentsDbCommands {
         Connection db = null;
         try {
             db = dbConnection.getConnection();
-            String sql = "SELECT name FROM clinics";
+            String sql = "SELECT name FROM clinics ORDER BY id ASC";
             try (Statement stmt = db.createStatement();
                  ResultSet rs = stmt.executeQuery(sql)) {
                 while (rs.next()) {
