@@ -25,7 +25,7 @@ import com.example.Models.Person;
 
 public class AdminInterface extends JFrame {
 
-    private JButton btnShowManageDoctors, btnShowManagePatients, btnShowManageSchedule, btnNotifications;
+    private JButton btnShowManageDoctors, btnShowManagePatients, btnShowManageSchedule, btnNotifications, btnShowStatistics;
     private JPanel mainPanel;
     private boolean disableMainWindow = false;
     private boolean disableDoctorWindow = false;
@@ -103,15 +103,18 @@ public class AdminInterface extends JFrame {
         btnShowManageDoctors = createStyledButton("Manage Doctors", "doctors.png");
         btnShowManagePatients = createStyledButton("Manage Patients", "patients.png");
         btnShowManageSchedule = createStyledButton("Manage Schedules", "schedule.png");
+        btnShowStatistics = createStyledButton("Show Statistics", "statistics.png");
         
         btnShowManageDoctors.addActionListener(e -> new AdminShowDoctors());
         btnShowManagePatients.addActionListener(e -> new AdminShowPatients());
         btnShowManageSchedule.addActionListener(e -> new AdminShowSchedules());
-        
+        btnShowStatistics.addActionListener(e ->  new AdminShowStatistics());
+
+
         buttonsPanel.add(btnShowManageDoctors);
         buttonsPanel.add(btnShowManagePatients);
         buttonsPanel.add(btnShowManageSchedule);
-        buttonsPanel.add(btnShowManageSchedule);
+        buttonsPanel.add(btnShowStatistics);
         
         // Footer panel
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
