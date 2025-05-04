@@ -15,6 +15,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
+import java.util.List;
 
 import java.awt.event.MouseEvent;
 
@@ -57,7 +58,7 @@ public class DoctorShowPatients extends JFrame //implements ActionListener
                 tableModel.setRowCount(0);
 
                 // Create a filtered list based on search criteria
-                java.util.List<Person> filteredList = new java.util.ArrayList<>();
+                List<Person> filteredList = new java.util.ArrayList<>();
                 
                 for (Person patient : patientsList) {
                     boolean matches = true;

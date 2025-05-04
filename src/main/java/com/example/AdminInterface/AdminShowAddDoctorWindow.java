@@ -95,11 +95,7 @@ public class AdminShowAddDoctorWindow extends JFrame {
         }
         formPanel.add(clinicsComboBox, gbc);
         
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        formPanel.add(new JLabel("Clinic Name:"), gbc);
-        
-        gbc.gridx = 1;
+       
         
         
         gbc.gridx = 0;

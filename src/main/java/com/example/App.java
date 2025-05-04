@@ -83,6 +83,7 @@ public class UserInterface implements ActionListener {
 
         UsersDbCommands db = new UsersDbCommands();
         List<Person> users = db.getUsers("name = '" + username + "'");
+        
         if (users.isEmpty()) {
             JOptionPane.showMessageDialog(null, "User not found.");
             return;
@@ -98,14 +99,14 @@ public class UserInterface implements ActionListener {
 
         switch (user.getRole().toLowerCase()) {
             case "admin":
-                new AdminInterface("Admin Interface", user); // تأكد أنك مررته
+                new AdminInterface("Admin Interface", user); 
                 break;
             case "doctor":
                 new DoctorInterface("Doctor Interface", user);
                 break;
             case "patient":
             new PatientsInterface("Patients Interface", user);
-            // ✅ هذا هو التصحيح المهم
+            
                 break;
             default:
                 JOptionPane.showMessageDialog(null, "Unknown role: " + user.getRole());
